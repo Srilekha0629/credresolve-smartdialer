@@ -1,0 +1,62 @@
+flowchart TD
+    subgraph UI["Frontend (React + Vite)"]
+        Dashboard["SmartDialer Console (React Dashboard)"]
+    end
+
+    subgraph API["FastAPI Application"]
+        Endpoints["REST Endpoints (/dialer, /events, /agents, /calls, /metrics)"]
+    end
+
+    subgraph Dialers["Dialing Engines"]
+        ProgDialer["Progressive Dialer (1:1 Allocation)"]
+        PredEngine["Predictive Pacing Engine (Metrics and Heuristics)"]
+    end
+
+    subgraph Boundary["Safety Boundary"]
+        SafetyCtrl["Safety Controller (Strict Gatekeeper & Batch Clamping)"]
+    end
+
+    subgraph Store["Durable State & Concurrency Engine"]
+        ProcessLock["Asyncio/Threading Locks + SQLite BEGIN IMMEDIATE"]
+        MemDB["SQLite MemoryStore API (Agents, Borrowers, Calls, Event IDs)"]
+        SM_Agent["Agent State Machine (7 Legal States)"]
+        SM_Call["Call State Machine (9 Legal States + Terminal Lock)"]
+    end
+
+    subgraph Telecom["Mock Telecom Layer"]
+        ProvMgr["Provider Manager (Outage Detector & Fallback Policy)"]
+        ProvA["Provider A (Fast & Reliable Tier-1)"]
+        ProvB["Provider B (Slow, Timeout/Reject; Webhook faults in Scenario D)"]
+    end
+
+    subgraph Webhook["Event Ingestion"]
+        EventProc["Event Processor (Idempotency via Event IDs)"]
+    end
+
+    subgraph Simulation["Explicit Demo Simulation"]
+        Scenarios["A-D Scenario Runner"]
+    end
+
+    Dashboard -->|HTTP / JSON| Endpoints
+    Endpoints --> ProgDialer
+    Endpoints --> PredEngine
+    Endpoints --> EventProc
+    Endpoints --> MemDB
+    Endpoints --> Scenarios
+
+    ProgDialer -->|Propose Batch| SafetyCtrl
+    PredEngine -.->|Suggest Volume (Cannot Bypass)| SafetyCtrl
+
+    SafetyCtrl -->|Validate & Reserve| ProcessLock
+    ProcessLock --> MemDB
+    MemDB --> SM_Agent
+    MemDB --> SM_Call
+
+    SafetyCtrl -->|Approved Calls| ProvMgr
+    ProvMgr -->|Primary| ProvA
+    ProvMgr -->|Flaky Route| ProvB
+    ProvMgr -->|Automatic Fallback| ProvA
+
+    Scenarios -->|Generated event models| EventProc
+    Dashboard -.->|Manual simulated events| Endpoints
+    EventProc -->|Check Event ID & Transition| ProcessLock

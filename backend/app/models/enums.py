@@ -1,0 +1,51 @@
+from enum import Enum
+
+
+class AgentState(str, Enum):
+    OFFLINE = "OFFLINE"
+    AVAILABLE = "AVAILABLE"
+    RESERVED = "RESERVED"
+    DIALING = "DIALING"
+    CONNECTED = "CONNECTED"
+    WRAP_UP = "WRAP_UP"
+    PAUSED = "PAUSED"
+
+
+class CallState(str, Enum):
+    QUEUED = "QUEUED"
+    RESERVED = "RESERVED"
+    INITIATED = "INITIATED"
+    RINGING = "RINGING"
+    ANSWERED = "ANSWERED"
+    CONNECTED = "CONNECTED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class DialerMode(str, Enum):
+    PROGRESSIVE = "PROGRESSIVE"
+    PREDICTIVE = "PREDICTIVE"
+
+
+class ProviderName(str, Enum):
+    PROVIDER_A = "PROVIDER_A"
+    PROVIDER_B = "PROVIDER_B"
+
+
+class ProviderEventType(str, Enum):
+    INITIATED = "INITIATED"
+    RINGING = "RINGING"
+    ANSWERED = "ANSWERED"
+    CONNECTED = "CONNECTED"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class ProviderSubmissionStatus(str, Enum):
+    NOT_SUBMITTED = "NOT_SUBMITTED"
+    SUBMITTING = "SUBMITTING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+    UNKNOWN = "UNKNOWN"
